@@ -1,5 +1,10 @@
+// docker nginx proxy
 var WEBSOCKET_API_URL = 'ws://localhost:8080/live';
+
+// docker nginx proxy to node server
 // var WEBSOCKET_API_URL = 'ws://localhost:8090';
+
+// when running node standalone bringing your own redis db and webserver
 // var WEBSOCKET_API_URL = 'ws://localhost:8000';
 
 var ws = openStream();
