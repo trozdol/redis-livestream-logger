@@ -10,7 +10,7 @@ services:
         container_name: db-dev-redis
         hostname: db
         ports:
-            - 6379
+            - 6379:6379
         networks:
             - db-net
 
@@ -26,9 +26,14 @@ services:
             - ./:/app
         working_dir: /app
         environment:
+            - NODE_ENV=development
+            # db host:port
             - DB_HOST=db
             - DB_PORT=6379
-        command: npm start
+            # websocket host:port
+            - WS_HOST=localhost
+            - WS_PORT=8000
+        command: ['npm', 'start']
         depends_on:
             - db
 

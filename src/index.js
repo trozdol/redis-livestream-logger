@@ -1,16 +1,17 @@
-console.log(process.env)
+const { DB_HOST, DB_PORT, WS_HOST, WS_PORT } = process.env;
+console.log({ DB_HOST, DB_PORT, WS_HOST, WS_PORT });
+
 /**
  * Setup Redis Database Connection:
  */
 const redis = require('redis');
 const rdb = redis.createClient({
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 6379
+    host: DB_HOST || 'localhost',
+    port: DB_PORT || 6379
 });
 
 /**
  * WebSocket Server:
- * - Connect from browser: ws://localhost:8000
  */
 const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server;
@@ -26,7 +27,7 @@ const WebSocketServer = WebSocket.Server;
 const ws = new WebSocketServer({
     // when using ssl
     // server: httpsServer,
-    port: 8000,
+    port: WS_PORT || 8000,
     perMessageDeflate: {
         zlibDeflateOptions: { chunkSize: 1024, memLevel: 7, level: 3 },
         zlibInflateOptions: { chunkSize: 10 * 1024 },
@@ -37,45 +38,66 @@ const ws = new WebSocketServer({
         threshold: 1024
     }
 });
-
+const socketConnections = new Map();
+var status = {
+    websockets: false,
+    redis : false
+};
 ws.on('connection', (socket) => {
-    console.log('connection');
-    socket.send('socket successful');
+    console.log('websocket: on connection');
     
+    const broadcast = (data) => {
+        console.log('<-', data);
+        if (!data) return;
+        
+        if (typeof data === 'object') {
+            socket.send(JSON.stringify(data, null, 4), (err) => {
+                console.error('websocket send error:', err);
+            });
+        } else {
+            socket.send(JSON.stringify({ time: Date.now(), args: [data] }, null, 4), (err) => {
+                console.error('websocket send error:', err);
+            });
+        }
+    }
+
+    broadcast(`websocket connection success`);
+    broadcast(`redis is ${status.redis ? 'is' : 'is not'} ready`);
     rdb.on('ready', () => {
-        socket.send('redis connection ready');
-        rdb.rpush(['frameworks_list', 'ReactJS', 'Angular'], function(err, reply) {
-            socket.send(reply); // 2
-        });
+        status.redis = true;
+        broadcast(`redis is ${status.redis ? 'is' : 'is not'} ready`);
     });
 
     rdb.monitor((err, res) => {
         if (err) {
-            socket.send(err.message);
+            console.error('ERROR', err);
+            broadcast(err?.message || err);
         } else {
-            socket.send('redis monitor mode enabled');
+            broadcast('redis monitor mode enabled');
         }
     });
-    
+
     rdb.on("monitor", (time, args, rawReply) => {
-        // TODO: learn more about monitor... or maybe redis
         const record = {
             time: time,
             args: args,
             raw: rawReply
         };
-        socket.send(JSON.stringify(record, null, 4));
+        broadcast(record);
     });
 
-    // rdb.on('message', (channel, message) => {});
+    rdb.on("error", (err) => {
+        console.error('REDIS Error:', err);
+        broadcast(err);
+    })
+
+    rdb.on('message', (channel, message) => {
+        console.log('redis on message:', channel, message)
+    });
 
     socket.on('message', (message) => {
-        console.log('message:', message);
-        
-        rdb.set('LOGGER', message, (reply) => {
-            reply.time = Date.now();
-            socket.send(JSON.stringify(reply, null, 4));
-        })
+        console.log('->', message);
+        broadcast(`received message: "${message}"`);
     });
 
     socket.on('close', (e) => {
@@ -84,8 +106,10 @@ ws.on('connection', (socket) => {
     });
     
     socket.on('error', (err) => {
-        console.error('ERROR', err.message);
-        socket.send(err.message);
+        console.error('WebSocket ERROR', err);
+        broadcast('WebSocket ERROR' + err);
     });
+
+    
 });
 

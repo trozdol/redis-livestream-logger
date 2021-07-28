@@ -1,5 +1,6 @@
-// var WEBSOCKET_API_URL = 'ws://localhost:8080/live';
-var WEBSOCKET_API_URL = 'ws://localhost:8090';
+var WEBSOCKET_API_URL = 'ws://localhost:8080/live';
+// var WEBSOCKET_API_URL = 'ws://localhost:8090';
+// var WEBSOCKET_API_URL = 'ws://localhost:8000';
 
 var ws = openStream();
 var table = document.querySelector('table tbody');
@@ -35,35 +36,38 @@ function openStream() {
                 args: [ e.data ],
             };
         }
+
         let row = table.insertRow(0);
         
         let argsTable = document.createElement('table');
         let argsTableBody = argsTable.createTBody();
-
-        rec.args.forEach((arg, index) => {
-            let rowIndex = argsTableBody.rows.length;
-            let row = argsTableBody.insertRow(rowIndex);
-            
-            let a = row.insertCell(0);
-            a.width = '30px';
-            a.innerText = index;
-
-            let b = row.insertCell(1);
-            b.width = '100%';
-            b.innerText = arg;
-        });
         
         let a = row.insertCell(0);
         a.innerText = rec.time;
 
         let b = row.insertCell(1);
-        b.appendChild(argsTable);
+        
+        if (typeof rec === 'string') {
+            b.innerText = rec;
+        } else {
+            rec.args.forEach((arg, index) => {
+
+                let rowIndex = argsTableBody.rows.length;
+                let row = argsTableBody.insertRow(rowIndex);
+
+                let a = row.insertCell(0);
+                a.innerText = index;
+    
+                let b = row.insertCell(1);
+                b.innerText = arg;
+            });
+            b.appendChild(argsTable);
+        }
 
         // handle inevitable memory leak
         if (table.rows.length > 100) {
             table.deleteRow(table.rows.length-1);
         }
-        
     })
     
     connection.addEventListener('error', (e) => {
@@ -75,6 +79,8 @@ function openStream() {
         
         connect.disabled = false;
         disconnect.disabled = true;
+        
+        ws = openStream();
     })
 
     return connection;

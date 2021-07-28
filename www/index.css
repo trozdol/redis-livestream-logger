@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+    padding: 0px;
+}
 body {
     padding: 0;
     margin: 0;
@@ -16,11 +20,15 @@ header h1 {
     font-weight: 100;
     font-size: 1.4em;
 }
+
+/* all tables */
 table {
     position: relative;
+    border-collapse: collapse;
     max-width: 100%; 
     width: 100%;
 }
+/* keep header row visible when scrolling down */
 table thead {
     position: sticky;
     top: 0;
@@ -28,42 +36,53 @@ table thead {
     right: 0;
     z-index: 2;
 }
+/* all cells inside table head */
 table thead tr td,
 table thead tr th {
+    background: rgb(31, 31, 41);
     border-top: 1px solid lime;
     border-bottom: 1px solid lime;
-}
-table thead tr td, 
-table thead tr th {
-    background: rgb(31, 31, 41);
     box-shadow: inset 0 0 0px 40px rgba(31, 31, 41, .5);
 }
+/* even table row data cells */
 table tr:nth-child(even) td {
     border-bottom: 2px solid transparent;
 }
+/* odd table row data cells */
 table tr:nth-child(odd) td {
     border-bottom: 2px solid rgb(39, 39, 53);
 }
-table td:nth-child(2) {
-    width: 100%;
-}
-th, td {
-    padding: 2px;
-}
-th {
-    background-color: rgb(39, 39, 53);
-    text-align: left;
-    padding: 4px;
-}
-td {
-    white-space: nowrap;
+/* all table data and header cells */
+table tr th,
+table tr td {
+    padding: 0px 3px;
     vertical-align: top;
 }
+/* all table header cells */
+table tr th {
+    background-color: rgb(39, 39, 53);
+    text-align: left;
+}
+/* table rows data cells */
+table tr td {
+    white-space: nowrap;
+}
+/* table rows column 1 data cells */
+table tr td:nth-child(1) {
+    
+}
+/* table rows column 2 data cells */
+table tr td:nth-child(2) {
+    width: 100%;
+}
 
+/* sub tables */
 table table {
     margin: 0;
+    padding: 0;
     z-index: 1;
     border-top: none;
+    border-collapse: collapse;
 }
 table table tr:nth-child(odd) td {
     border-bottom: none;
@@ -71,4 +90,9 @@ table table tr:nth-child(odd) td {
 table table tr:nth-child(even) td {
     border-bottom: none;
     background-color: rgb(39, 39, 53);
+}
+table table tr td,
+table table tr th {
+    margin: 0;
+    border: none;
 }
