@@ -1,0 +1,21 @@
+{
+  "name": "redis-livestream-logger",
+  "version": "1.0.0",
+  "description": "Same as name",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon .",
+    "debug": "npm install && nodemon ."
+  },
+  "keywords": [],
+  "author": "Shayne Trosdahl",
+  "license": "ISC",
+  "dependencies": {
+    "bufferutil": "^4.0.3",
+    "nodemon": "^2.0.12",
+    "redis": "^3.1.2",
+    "utf-8-validate": "^5.0.5",
+    "ws": "^7.5.3"
+  }
+}
